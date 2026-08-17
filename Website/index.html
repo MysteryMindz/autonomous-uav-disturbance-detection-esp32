@@ -8,16 +8,37 @@
     <link rel="stylesheet" href="css/styles.css">
 </head>
 <body>
-    <header class="dashboard-header">
-        <h1>UAV DISTURBANCE DETECTION STATION</h1>
-        <div class="header-right">
+    <div class="top-row">
+        <header class="dashboard-header">
+            <div class="header-left">
+                <h1>UAV DISTURBANCE DETECTION STATION</h1>
+            </div>
+            
             <div class="nav-links">
                 <a href="index.html" class="nav-btn active">Dashboard</a>
                 <a href="logs.html" class="nav-btn">Event Logs</a>
             </div>
-            <div class="system-status"><span class="status-indicator"></span> SYSTEM ONLINE</div>
+
+            <div class="header-right">
+                <div class="system-status"><span class="status-indicator"></span> SYSTEM ONLINE</div>
+            </div>
+        </header>
+
+        <!-- 3D UAV Visualizer outside the header -->
+        <div class="uav-visualizer-container">
+            <div class="uav-visualizer" style="perspective: 400px; display: flex; align-items: center; justify-content: center; width: 72px; height: 72px; border-radius: 50%; background: var(--bg-card); border: 2px solid var(--border-color); box-shadow: inset 0 0 15px rgba(0,0,0,0.5);">
+                <svg id="uav-model" width="48" height="48" viewBox="0 0 24 24" fill="var(--bg-card-hover)" stroke="var(--accent-blue)" stroke-width="1.5" style="transition: transform 0.4s ease-out; transform-style: preserve-3d; filter: drop-shadow(0 4px 6px rgba(0,0,0,0.3));">
+                    <!-- Fuselage -->
+                    <path d="M12 2 L14 8 L14 18 L12 22 L10 18 L10 8 Z"/>
+                    <!-- Main Wings -->
+                    <path d="M14 10 L22 14 L22 16 L14 14 Z"/>
+                    <path d="M10 10 L2 14 L2 16 L10 14 Z"/>
+                    <!-- Tail -->
+                    <path d="M13 18 L18 20 L18 21 L12 20 L6 21 L6 20 L11 18 Z"/>
+                </svg>
+            </div>
         </div>
-    </header>
+    </div>
 
     <div class="alert-banner">
         <div class="alert-box issue-box">
@@ -108,6 +129,10 @@
             <div class="data-row">
                 <span class="label">Barometric Pressure</span>
                 <span class="value"><span data-bind="raw_sensors.pressure_hpa">0</span> hPa</span>
+            </div>
+            <div class="data-row">
+                <span class="label">Altitude Change</span>
+                <span class="value"><span data-bind="derived_metrics.altitude_change_ms">0.0</span> m/s</span>
             </div>
             <div class="data-row">
                 <span class="label">Ambient Temperature</span>

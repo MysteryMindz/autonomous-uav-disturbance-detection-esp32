@@ -7,12 +7,16 @@ let dashboardState = {
     timestamp_ms: "0",
     system_status: "ONLINE",
     threat_level: "CLEAR",
-    
+
+    derived_metrics: {
+        altitude_change_ms: "0.0"
+    },
+
     rae_messages: {
         issue: "No active threats detected. System operating nominally.",
         decision: "MAINTAIN CRUISE VECTOR"
     },
-    
+
     risk_scores: {
         r_total: "0.0",
         d_tof: "0.0",
@@ -22,13 +26,13 @@ let dashboardState = {
         v_cam: "0.0",
         s_loss: "0.0"
     },
-    
+
     actuation: {
         servo_yaw_deg: "0",
         servo_pitch_deg: "0",
         maneuver_state: "CRUISE"
     },
-    
+
     raw_sensors: {
         tof_distance_mm: "4500",
         pressure_hpa: "1012.5",
@@ -36,7 +40,7 @@ let dashboardState = {
         accel_g: { ax: "0.0", ay: "0.0", az: "1.0" },
         gyro_dps: { gx: "0.0", gy: "0.0", gz: "0.0" }
     },
-    
+
     diagnostics: {
         dominant_threat: "NONE",
         cam_clear_sector: "CENTER",
@@ -47,33 +51,78 @@ let dashboardState = {
 
 /**
  * Translates raw hardware states into human-readable text alerts
+ * and derives synthetic metrics (like altitude change) from raw sensors
  */
-function generateRaeMessages(data) {
-    // Only proceed if the data has the necessary structure
-    if (!data.diagnostics || !data.actuation) return;
+let lastAltitude = null;
+let lastTimestamp = null;
 
-    let issue = "No active threats detected. System operating nominally.";
-    let decision = "MAINTAIN CRUISE VECTOR";
+function deriveFrontendMetrics(data) {
+    // 1. RAE Messages
+    if (data.diagnostics && data.actuation) {
+        let issue = "No active threats detected. System operating nominally.";
+        let decision = "MAINTAIN CRUISE VECTOR";
 
-    if (data.system_status !== "ONLINE" || data.threat_level !== "CLEAR") {
-        const threat = data.diagnostics.dominant_threat;
-        
-        if (threat === "RF_JAMMER") issue = "CRITICAL: High-intensity RF Jamming detected.";
-        else if (threat === "OBSTACLE_FRONT") issue = "WARNING: Frontal collision imminent.";
-        else if (threat === "SIDE_PROXIMITY") issue = "WARNING: Lateral obstacle detected.";
-        else if (threat === "TURBULENCE") issue = "ADVISORY: Severe turbulence encountered.";
-        else if (threat === "LOW_VISIBILITY") issue = "ADVISORY: Vision system degraded.";
-        else issue = `ALERT: Unknown threat class (${threat}).`;
-        
-        const maneuver = data.actuation.maneuver_state;
-        decision = `EVASIVE ACTION: ${maneuver.replace(/_/g, ' ')} INITIATED.`;
+        if (data.system_status !== "ONLINE" || data.threat_level !== "CLEAR") {
+            const threat = data.diagnostics.dominant_threat;
+
+            if (threat === "RF_JAMMER") issue = "CRITICAL: High-intensity RF Jamming detected.";
+            else if (threat === "OBSTACLE_FRONT") issue = "WARNING: Frontal collision imminent.";
+            else if (threat === "SIDE_PROXIMITY") issue = "WARNING: Lateral obstacle detected.";
+            else if (threat === "TURBULENCE") issue = "ADVISORY: Severe turbulence encountered.";
+            else if (threat === "LOW_VISIBILITY") issue = "ADVISORY: Vision system degraded.";
+            else issue = `ALERT: Unknown threat class (${threat}).`;
+
+            const maneuver = data.actuation.maneuver_state;
+            decision = `EVASIVE ACTION: ${maneuver.replace(/_/g, ' ')} INITIATED.`;
+        }
+
+        // Inject these back into the data object for the UI binder
+        data.rae_messages = { issue, decision };
     }
 
-    // Inject these back into the data object for the UI binder
-    data.rae_messages = {
-        issue: issue,
-        decision: decision
-    };
+    // 2. Altitude Change (derived from barometric pressure)
+    if (data.raw_sensors && data.raw_sensors.pressure_hpa && data.timestamp_ms !== undefined) {
+        const p = parseFloat(data.raw_sensors.pressure_hpa);
+        const currentAltitude = 44330 * (1 - Math.pow(p / 1013.25, 0.1903));
+        const currentTime = parseInt(data.timestamp_ms);
+
+        let altChangeStr = "0.0";
+
+        if (lastAltitude !== null && lastTimestamp !== null && currentTime > lastTimestamp) {
+            const dt_s = (currentTime - lastTimestamp) / 1000.0;
+            const dAlt = currentAltitude - lastAltitude;
+            const rate = dAlt / dt_s;
+            altChangeStr = rate > 0 ? `+${rate.toFixed(1)}` : rate.toFixed(1);
+        }
+
+        lastAltitude = currentAltitude;
+        lastTimestamp = currentTime;
+
+        data.derived_metrics = { altitude_change_ms: altChangeStr };
+    }
+}
+
+/**
+ * Updates the 3D CSS transform of the UAV model icon in the header
+ */
+function updateUAVVisualizer(data) {
+    const uavModel = document.getElementById('uav-model');
+    if (!uavModel || !data.actuation) return;
+
+    // servo_yaw_deg maps to rotateZ (spinning left/right like a compass)
+    // servo_pitch_deg maps to rotateX (nose up/down)
+    const yaw = parseFloat(data.actuation.servo_yaw_deg) || 0;
+    const pitch = parseFloat(data.actuation.servo_pitch_deg) || 0;
+    
+    // Apply 3D transforms. 
+    uavModel.style.transform = `rotateZ(${yaw}deg) rotateX(${-pitch}deg)`;
+
+    // Alert color overrides
+    if (data.actuation.maneuver_state !== 'CRUISE') {
+        uavModel.style.stroke = 'var(--accent-warning)';
+    } else {
+        uavModel.style.stroke = 'var(--accent-blue)';
+    }
 }
 
 /**
@@ -82,9 +131,10 @@ function generateRaeMessages(data) {
  * Adding new sensors only requires adding a matching HTML element with data-bind="category.key".
  */
 function updateDashboard(data, prefix = '') {
-    // If this is the root object update, generate our synthetic UI messages first
+    // If this is the root object update, generate our synthetic UI metrics first
     if (prefix === '') {
-        generateRaeMessages(data);
+        deriveFrontendMetrics(data);
+        updateUAVVisualizer(data);
     }
 
     for (const key in data) {
@@ -205,10 +255,11 @@ function simulateTelemetry() {
         dashboardState.risk_scores.r_total = "0.85";
         dashboardState.risk_scores.s_loss = "0.9";
         dashboardState.actuation.servo_yaw_deg = "-45";
+        dashboardState.actuation.servo_pitch_deg = "25";
         dashboardState.actuation.maneuver_state = "EVASIVE_LEFT";
         dashboardState.diagnostics.dominant_threat = "RF_JAMMER";
         dashboardState.diagnostics.rf_jamming_detected = "true";
-        
+
         appendLog('CRITICAL: RF Jamming Attack Detected!', 'alert');
         appendLog('Actuation triggered: EVASIVE_LEFT', 'warn');
     }
@@ -219,10 +270,11 @@ function simulateTelemetry() {
         dashboardState.risk_scores.r_total = "0.1";
         dashboardState.risk_scores.s_loss = "0.0";
         dashboardState.actuation.servo_yaw_deg = "0";
+        dashboardState.actuation.servo_pitch_deg = "0";
         dashboardState.actuation.maneuver_state = "CRUISE";
         dashboardState.diagnostics.dominant_threat = "NONE";
         dashboardState.diagnostics.rf_jamming_detected = "false";
-        
+
         appendLog('Threat cleared. Resuming nominal flight path.', 'nominal');
     }
 
