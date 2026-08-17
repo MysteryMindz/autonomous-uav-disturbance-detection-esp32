@@ -1,0 +1,379 @@
+:root {
+    --bg-main: #0b0f19;
+    --bg-card: #131b26;
+    --bg-card-hover: #1a2233;
+    --text-muted: #8b9bb4;
+    --text-bright: #e2e8f0;
+    --accent-green: #10b981;
+    --accent-red: #ef4444;
+    --accent-blue: #3b82f6;
+    --accent-warning: #f59e0b;
+    --border-color: #2a354d;
+    --terminal-bg: #05070a;
+}
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    font-family: "SF Pro Text", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    background-color: var(--bg-main);
+    color: var(--text-bright);
+    line-height: 1.5;
+    padding: 24px;
+}
+
+.dashboard-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 16px 24px;
+    margin-bottom: 24px;
+    background-color: var(--bg-card);
+    border-radius: 8px;
+    border: 1px solid var(--border-color);
+}
+
+.dashboard-header h1 {
+    font-size: 1.25rem;
+    font-weight: 600;
+    letter-spacing: 1px;
+    color: var(--text-bright);
+}
+
+.system-status {
+    font-size: 0.95rem;
+    font-weight: bold;
+    display: flex;
+    align-items: center;
+    color: var(--accent-green);
+    transition: color 0.3s ease;
+}
+
+.status-indicator {
+    width: 12px;
+    height: 12px;
+    background-color: var(--accent-green);
+    border-radius: 50%;
+    margin-right: 10px;
+    box-shadow: 0 0 10px var(--accent-green);
+    transition: background-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.dashboard-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+    gap: 20px;
+    margin-bottom: 24px;
+}
+
+.card {
+    background-color: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    padding: 20px;
+    transition: background-color 0.2s ease, border-color 0.2s ease;
+}
+
+.card:hover {
+    background-color: var(--bg-card-hover);
+    border-color: #3b4b6b;
+}
+
+.card h2 {
+    font-size: 0.9rem;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    margin-bottom: 16px;
+    border-bottom: 1px solid var(--border-color);
+    padding-bottom: 10px;
+}
+
+.data-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 0;
+    border-bottom: 1px dashed var(--border-color);
+}
+
+.data-row:last-child {
+    border-bottom: none;
+    padding-bottom: 0;
+}
+
+.label {
+    color: var(--text-muted);
+    font-size: 0.95rem;
+}
+
+.value {
+    font-weight: 600;
+    font-family: "JetBrains Mono", "Courier New", Courier, monospace;
+    color: var(--text-bright);
+    transition: color 0.2s ease;
+}
+
+.decision-card {
+    border-top: 3px solid var(--accent-blue);
+}
+
+/* Logs Section */
+.logs-section {
+    grid-column: 1 / -1; 
+    padding: 0;
+    overflow: hidden;
+}
+
+.logs-section h2 {
+    margin: 20px 20px 0 20px;
+    border-bottom: none;
+    padding-bottom: 10px;
+}
+
+.log-terminal {
+    background-color: var(--terminal-bg);
+    border-top: 1px solid var(--border-color);
+    height: 280px;
+    overflow-y: auto;
+    padding: 16px 20px;
+    font-family: "JetBrains Mono", "Courier New", Courier, monospace;
+    font-size: 0.85rem;
+    line-height: 1.6;
+}
+
+.log-entry {
+    margin-bottom: 6px;
+    word-wrap: break-word;
+    display: flex;
+    gap: 12px;
+}
+
+.log-timestamp {
+    color: #4a5b78;
+    user-select: none;
+}
+
+.log-content {
+    flex: 1;
+}
+
+.log-info .log-content { color: var(--text-muted); }
+.log-warn .log-content { color: var(--accent-warning); }
+.log-alert .log-content { color: var(--accent-red); font-weight: bold; }
+.log-nominal .log-content { color: var(--accent-green); }
+
+/* Dynamic state coloring */
+.text-nominal { color: var(--accent-green) !important; }
+.text-alert { color: var(--accent-red) !important; }
+.text-warning { color: var(--accent-warning) !important; }
+
+/* Custom Scrollbar for Terminal */
+.log-terminal::-webkit-scrollbar {
+    width: 8px;
+}
+.log-terminal::-webkit-scrollbar-track {
+    background: var(--terminal-bg);
+}
+.log-terminal::-webkit-scrollbar-thumb {
+    background: var(--border-color);
+    border-radius: 4px;
+}
+.log-terminal::-webkit-scrollbar-thumb:hover {
+    background: #4a5b78;
+}
+
+/* Nav Links */
+.header-right {
+    display: flex;
+    align-items: center;
+}
+
+.nav-links {
+    display: flex;
+    gap: 15px;
+    margin-right: 20px;
+}
+
+.nav-btn {
+    text-decoration: none;
+    color: var(--text-muted);
+    font-size: 0.95rem;
+    font-weight: 600;
+    padding: 6px 12px;
+    border-radius: 4px;
+    transition: background-color 0.2s, color 0.2s;
+}
+
+.nav-btn:hover {
+    color: var(--text-bright);
+    background-color: var(--bg-card-hover);
+}
+
+.nav-btn.active {
+    color: var(--text-bright);
+    background-color: var(--border-color);
+}
+
+/* Event Logs Page Styles */
+.logs-controls {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    padding: 15px;
+    background-color: var(--terminal-bg);
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+}
+
+.filters {
+    display: flex;
+    align-items: center;
+    max-width: 75%;
+    overflow: hidden;
+}
+
+.filter-label {
+    margin-right: 15px;
+    color: var(--text-muted);
+    white-space: nowrap;
+    font-weight: 600;
+}
+
+.filter-pills {
+    display: flex;
+    overflow-x: auto;
+    gap: 10px;
+    padding-bottom: 2px;
+    /* Hide scrollbar */
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+}
+.filter-pills::-webkit-scrollbar {
+    display: none;
+}
+
+.filter-pill {
+    background-color: var(--bg-card);
+    color: var(--text-muted);
+    border: 1px solid var(--border-color);
+    padding: 6px 16px;
+    border-radius: 20px;
+    cursor: pointer;
+    font-size: 0.85rem;
+    font-weight: 600;
+    white-space: nowrap;
+    transition: all 0.2s ease;
+    outline: none;
+}
+
+.filter-pill:hover {
+    background-color: var(--bg-card-hover);
+    color: var(--text-bright);
+}
+
+.filter-pill.active {
+    background-color: var(--terminal-bg);
+    color: var(--text-bright);
+    /* border-color is set dynamically via JS */
+}
+
+.action-btn {
+    background-color: var(--border-color);
+    color: var(--text-bright);
+    border: none;
+    padding: 8px 16px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-weight: 600;
+    transition: background-color 0.2s;
+}
+
+.action-btn:hover {
+    background-color: #3b4b6b;
+}
+
+.table-container {
+    overflow-x: auto;
+}
+
+#logsTable {
+    width: 100%;
+    border-collapse: collapse;
+    font-family: "JetBrains Mono", "Courier New", Courier, monospace;
+    font-size: 0.9rem;
+}
+
+#logsTable th, #logsTable td {
+    padding: 12px 15px;
+    text-align: left;
+    border-bottom: 1px solid var(--border-color);
+}
+
+#logsTable th {
+    background-color: var(--terminal-bg);
+    color: var(--text-muted);
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    font-size: 0.85rem;
+}
+
+#logsTable tbody tr:hover {
+    background-color: var(--bg-card-hover);
+}
+
+.type-badge {
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 0.8rem;
+    font-weight: bold;
+}
+
+/* RAE Alert Banner Styles */
+.alert-banner {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+    gap: 20px;
+    margin-bottom: 24px;
+}
+
+.alert-box {
+    background-color: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    border-left: 4px solid var(--border-color);
+}
+
+.issue-box {
+    border-left-color: var(--accent-red);
+}
+
+.decision-box {
+    border-left-color: var(--accent-blue);
+}
+
+.alert-label {
+    font-size: 0.85rem;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 8px;
+    font-weight: 600;
+}
+
+.alert-message {
+    font-size: 1.15rem;
+    color: var(--text-bright);
+    font-weight: bold;
+    font-family: "JetBrains Mono", "Courier New", Courier, monospace;
+}

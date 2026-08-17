@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>UAV Ground Station Dashboard</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+    <header class="dashboard-header">
+        <h1>UAV DISTURBANCE DETECTION STATION</h1>
+        <div class="header-right">
+            <div class="nav-links">
+                <a href="index.html" class="nav-btn active">Dashboard</a>
+                <a href="logs.html" class="nav-btn">Event Logs</a>
+            </div>
+            <div class="system-status"><span class="status-indicator"></span> SYSTEM ONLINE</div>
+        </div>
+    </header>
+
+    <div class="alert-banner">
+        <div class="alert-box issue-box">
+            <div class="alert-label">DETECTED ISSUE</div>
+            <div class="alert-message" data-bind="rae_messages.issue">No active threats detected. System operating nominally.</div>
+        </div>
+        <div class="alert-box decision-box">
+            <div class="alert-label">RAE DECISION</div>
+            <div class="alert-message" data-bind="rae_messages.decision">MAINTAIN CRUISE VECTOR</div>
+        </div>
+    </div>
+
+    <div class="dashboard-grid">
+        <!-- Core Status -->
+        <div class="card decision-card">
+            <h2>Core Status</h2>
+            <div class="data-row">
+                <span class="label">System Uptime</span>
+                <span class="value"><span data-bind="timestamp_ms">0</span> ms</span>
+            </div>
+            <div class="data-row">
+                <span class="label">System Status</span>
+                <span class="value" data-bind="system_status">ONLINE</span>
+            </div>
+            <div class="data-row">
+                <span class="label">Threat Level</span>
+                <span class="value" data-bind="threat_level">CLEAR</span>
+            </div>
+        </div>
+
+        <!-- Risk Scores -->
+        <div class="card">
+            <h2>Risk Scores (0.0 - 1.0)</h2>
+            <div class="data-row">
+                <span class="label">Combined Total Risk</span>
+                <span class="value" data-bind="risk_scores.r_total">0.0</span>
+            </div>
+            <div class="data-row">
+                <span class="label">Front Laser Obstacle</span>
+                <span class="value" data-bind="risk_scores.d_tof">0.0</span>
+            </div>
+            <div class="data-row">
+                <span class="label">Left Proximity Tripwire</span>
+                <span class="value" data-bind="risk_scores.d_ir_left">0.0</span>
+            </div>
+            <div class="data-row">
+                <span class="label">Right Proximity Tripwire</span>
+                <span class="value" data-bind="risk_scores.d_ir_right">0.0</span>
+            </div>
+            <div class="data-row">
+                <span class="label">Vibration & Turbulence</span>
+                <span class="value" data-bind="risk_scores.a_turb">0.0</span>
+            </div>
+            <div class="data-row">
+                <span class="label">Vision Hazard Level</span>
+                <span class="value" data-bind="risk_scores.v_cam">0.0</span>
+            </div>
+            <div class="data-row">
+                <span class="label">RF Jamming / Packet Loss</span>
+                <span class="value" data-bind="risk_scores.s_loss">0.0</span>
+            </div>
+        </div>
+
+        <!-- Actuation -->
+        <div class="card">
+            <h2>Actuation & Directives</h2>
+            <div class="data-row">
+                <span class="label">Yaw Servo Angle</span>
+                <span class="value"><span data-bind="actuation.servo_yaw_deg">0</span>°</span>
+            </div>
+            <div class="data-row">
+                <span class="label">Pitch Servo Angle</span>
+                <span class="value"><span data-bind="actuation.servo_pitch_deg">0</span>°</span>
+            </div>
+            <div class="data-row">
+                <span class="label">Flight Maneuver</span>
+                <span class="value" data-bind="actuation.maneuver_state">CRUISE</span>
+            </div>
+        </div>
+
+        <!-- Raw Sensors -->
+        <div class="card">
+            <h2>Raw Sensor Telemetry</h2>
+            <div class="data-row">
+                <span class="label">Distance to Target</span>
+                <span class="value"><span data-bind="raw_sensors.tof_distance_mm">0</span> mm</span>
+            </div>
+            <div class="data-row">
+                <span class="label">Barometric Pressure</span>
+                <span class="value"><span data-bind="raw_sensors.pressure_hpa">0</span> hPa</span>
+            </div>
+            <div class="data-row">
+                <span class="label">Ambient Temperature</span>
+                <span class="value"><span data-bind="raw_sensors.temp_c">0</span> °C</span>
+            </div>
+            <div class="data-row">
+                <span class="label">Acceleration (x,y,z)</span>
+                <span class="value">
+                    <span data-bind="raw_sensors.accel_g.ax">0.0</span>, 
+                    <span data-bind="raw_sensors.accel_g.ay">0.0</span>, 
+                    <span data-bind="raw_sensors.accel_g.az">0.0</span>
+                </span>
+            </div>
+            <div class="data-row">
+                <span class="label">Angular Velocity (x,y,z)</span>
+                <span class="value">
+                    <span data-bind="raw_sensors.gyro_dps.gx">0.0</span>, 
+                    <span data-bind="raw_sensors.gyro_dps.gy">0.0</span>, 
+                    <span data-bind="raw_sensors.gyro_dps.gz">0.0</span>
+                </span>
+            </div>
+        </div>
+
+        <!-- Diagnostics -->
+        <div class="card">
+            <h2>Diagnostics & Root Cause</h2>
+            <div class="data-row">
+                <span class="label">Primary Threat Source</span>
+                <span class="value" data-bind="diagnostics.dominant_threat">NONE</span>
+            </div>
+            <div class="data-row">
+                <span class="label">Clear Vision Sector</span>
+                <span class="value" data-bind="diagnostics.cam_clear_sector">CENTER</span>
+            </div>
+            <div class="data-row">
+                <span class="label">RF Jamming State</span>
+                <span class="value" data-bind="diagnostics.rf_jamming_detected">false</span>
+            </div>
+            <div class="data-row">
+                <span class="label">Critical Override</span>
+                <span class="value" data-bind="diagnostics.override_active">false</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- System Logs -->
+    <div class="logs-section card">
+        <h2>System Logs</h2>
+        <div id="log-terminal" class="log-terminal">
+            <!-- Logs dynamically appended here -->
+        </div>
+    </div>
+
+    <script src="js/app.js"></script>
+</body>
+</html>

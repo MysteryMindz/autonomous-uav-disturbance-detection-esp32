@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>UAV Ground Station - Event Logs</title>
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+    <header class="dashboard-header">
+        <h1>UAV DISTURBANCE DETECTION STATION</h1>
+        <div class="header-right">
+            <div class="nav-links">
+                <a href="index.html" class="nav-btn">Dashboard</a>
+                <a href="logs.html" class="nav-btn active">Event Logs</a>
+            </div>
+            <div class="system-status"><span class="status-indicator"></span> SYSTEM ONLINE</div>
+        </div>
+    </header>
+
+    <div class="card">
+        <h2>Event Logs History</h2>
+        
+        <div class="logs-controls">
+            <div class="filters">
+                <span class="filter-label">Filter by Type:</span>
+                <div id="typeFilter" class="filter-pills">
+                    <!-- Populated dynamically by logs.js -->
+                </div>
+            </div>
+            <button id="exportCsvBtn" class="action-btn">Export to CSV</button>
+        </div>
+
+        <div class="table-container">
+            <table id="logsTable">
+                <thead>
+                    <tr>
+                        <th>Timestamp</th>
+                        <th>Type</th>
+                        <th>Source</th>
+                        <th>Message</th>
+                    </tr>
+                </thead>
+                <tbody id="logsTableBody">
+                    <!-- Logs dynamically appended here -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <script src="js/logs.js"></script>
+</body>
+</html>
