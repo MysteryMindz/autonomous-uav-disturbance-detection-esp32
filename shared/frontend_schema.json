@@ -1,19 +1,21 @@
-
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "title": "AeroShield Telemetry",
   "description": "RAE telemetry output from the Main ESP32 for frontend integration.",
   "type": "object",
   "additionalProperties": false,
+
   "required": [
     "timestamp_ms",
     "system_status",
     "threat_level",
+    "rae_messages",
     "risk_scores",
     "actuation",
     "raw_sensors",
     "diagnostics"
   ],
+
   "properties": {
     "timestamp_ms": {
       "type": "integer",
@@ -40,6 +42,26 @@
         "CRITICAL"
       ],
       "description": "Classified hazard tier."
+    },
+
+    "rae_messages": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "issue",
+        "decision"
+      ],
+      "properties": {
+        "issue": {
+          "type": "string",
+          "description": "Human-readable text of the detected issue or threat."
+        },
+
+        "decision": {
+          "type": "string",
+          "description": "Human-readable text of the action or decision taken by the RAE."
+        }
+      }
     },
 
     "risk_scores": {
@@ -183,10 +205,12 @@
               "type": "number",
               "description": "Acceleration X component in g."
             },
+
             "ay": {
               "type": "number",
               "description": "Acceleration Y component in g."
             },
+
             "az": {
               "type": "number",
               "description": "Acceleration Z component in g."
@@ -207,10 +231,12 @@
               "type": "number",
               "description": "Angular velocity X component in degrees per second."
             },
+
             "gy": {
               "type": "number",
               "description": "Angular velocity Y component in degrees per second."
             },
+
             "gz": {
               "type": "number",
               "description": "Angular velocity Z component in degrees per second."
