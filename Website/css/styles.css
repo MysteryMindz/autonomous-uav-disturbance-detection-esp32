@@ -1,15 +1,19 @@
 :root {
-    --bg-main: #0a1114; /* Deep dark cyan-charcoal */
-    --bg-card: rgba(0, 183, 205, 0.08); /* Glassy tint of cyan */
-    --bg-card-hover: rgba(0, 183, 205, 0.15);
-    --text-muted: #839ea8;
-    --text-bright: #FFF1D1; /* User provided cream */
-    --accent-green: #00E676; /* Added matching neon green */
-    --accent-red: #DF301C; /* User provided red */
-    --accent-blue: #00B7CD; /* User provided cyan */
-    --accent-warning: #FF9100; /* User provided orange */
-    --border-color: rgba(0, 183, 205, 0.3);
-    --terminal-bg: rgba(0, 0, 0, 0.6);
+    --bg-main: #121111;
+    --bg-card: #1b1b1d;
+    --bg-card-hover: #2d2d30;
+    --text-muted: #cccccc;
+    --text-bright: #ffffff;
+    --accent-green: #86efac;
+    /* Pastel green */
+    --accent-red: #fca5a5;
+    /* Pastel red */
+    --accent-blue: #93c5fd;
+    /* Pastel blue */
+    --accent-warning: #fcd34d;
+    /* Pastel yellow */
+    --border-color: #3e3e42;
+    --terminal-bg: #111111;
 }
 
 * {
@@ -39,8 +43,7 @@ body {
     align-items: center;
     padding: 8px 16px;
     background-color: var(--bg-card);
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
+    /* Restore card background */
     border-radius: 8px;
     border: 1px solid var(--border-color);
 }
@@ -68,13 +71,12 @@ body {
 }
 
 .status-indicator {
-    width: 12px;
-    height: 12px;
+    width: 8px;
+    height: 8px;
     background-color: var(--accent-green);
     border-radius: 50%;
     margin-right: 10px;
-    box-shadow: 0 0 10px var(--accent-green);
-    transition: background-color 0.3s ease, box-shadow 0.3s ease;
+    transition: background-color 0.3s ease;
 }
 
 .dashboard-grid {
@@ -86,8 +88,6 @@ body {
 
 .card {
     background-color: var(--bg-card);
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
     border: 1px solid var(--border-color);
     border-radius: 8px;
     padding: 20px;
@@ -114,7 +114,6 @@ body {
     justify-content: space-between;
     align-items: center;
     padding: 10px 0;
-    border-bottom: 1px dashed var(--border-color);
 }
 
 .data-row:last-child {
@@ -135,7 +134,7 @@ body {
 }
 
 .decision-card {
-    border-top: 3px solid var(--accent-blue);
+    /* Removed heavy top border for minimalism */
 }
 
 /* Logs Section */

@@ -34,13 +34,13 @@ function init3D() {
     planeGroup = new THREE.Group();
 
     // Main material
-    planeMaterial = new THREE.MeshPhongMaterial({ 
-        color: 0x00B7CD, // User provided cyan
+    planeMaterial = new THREE.MeshPhongMaterial({
+        color: 0x93c5fd, // Soft pastel blue
         flatShading: true
     });
-    
+
     const darkMaterial = new THREE.MeshPhongMaterial({
-        color: 0x0a1114 // Dark charcoal for cockpit
+        color: 0x1e1e1e // Soft dark grey for cockpit
     });
 
     // Fuselage (Body)
@@ -111,9 +111,9 @@ window.update3DModel = function (yawDeg, pitchDeg, isAlert) {
 
     // Color alert handling (Red for evasive action)
     if (isAlert) {
-        planeMaterial.color.setHex(0xDF301C); 
+        planeMaterial.color.setHex(0xfca5a5); // Pastel red
     } else {
-        planeMaterial.color.setHex(0x00B7CD); 
+        planeMaterial.color.setHex(0x93c5fd); // Pastel blue
     }
 }
 
