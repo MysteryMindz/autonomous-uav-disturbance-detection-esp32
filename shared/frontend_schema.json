@@ -1,1 +1,269 @@
 
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "AeroShield Telemetry",
+  "description": "RAE telemetry output from the Main ESP32 for frontend integration.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "timestamp_ms",
+    "system_status",
+    "threat_level",
+    "risk_scores",
+    "actuation",
+    "raw_sensors",
+    "diagnostics"
+  ],
+  "properties": {
+    "timestamp_ms": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "System uptime in milliseconds since boot."
+    },
+
+    "system_status": {
+      "type": "string",
+      "enum": [
+        "STANDBY",
+        "ONLINE",
+        "FAILSAFE"
+      ],
+      "description": "Overall node state."
+    },
+
+    "threat_level": {
+      "type": "string",
+      "enum": [
+        "CLEAR",
+        "ADVISORY",
+        "WARNING",
+        "CRITICAL"
+      ],
+      "description": "Classified hazard tier."
+    },
+
+    "risk_scores": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "r_total",
+        "d_tof",
+        "d_ir_left",
+        "d_ir_right",
+        "a_turb",
+        "v_cam",
+        "s_loss"
+      ],
+      "properties": {
+        "r_total": {
+          "type": "number",
+          "minimum": 0.0,
+          "maximum": 1.0,
+          "description": "Combined output risk factor calculated by the RAE."
+        },
+
+        "d_tof": {
+          "type": "number",
+          "minimum": 0.0,
+          "maximum": 1.0,
+          "description": "Normalized laser front obstacle threat."
+        },
+
+        "d_ir_left": {
+          "type": "number",
+          "minimum": 0.0,
+          "maximum": 1.0,
+          "description": "Normalized left proximity tripwire status."
+        },
+
+        "d_ir_right": {
+          "type": "number",
+          "minimum": 0.0,
+          "maximum": 1.0,
+          "description": "Normalized right proximity tripwire status."
+        },
+
+        "a_turb": {
+          "type": "number",
+          "minimum": 0.0,
+          "maximum": 1.0,
+          "description": "Normalized MPU6050 vibration/turbulence disturbance."
+        },
+
+        "v_cam": {
+          "type": "number",
+          "minimum": 0.0,
+          "maximum": 1.0,
+          "description": "Normalized Pi Zero vision/visibility hazard factor."
+        },
+
+        "s_loss": {
+          "type": "number",
+          "minimum": 0.0,
+          "maximum": 1.0,
+          "description": "Normalized RF jamming/packet loss intensity."
+        }
+      }
+    },
+
+    "actuation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "servo_yaw_deg",
+        "servo_pitch_deg",
+        "maneuver_state"
+      ],
+      "properties": {
+        "servo_yaw_deg": {
+          "type": "integer",
+          "minimum": -90,
+          "maximum": 90,
+          "description": "Horizontal deflection target in degrees."
+        },
+
+        "servo_pitch_deg": {
+          "type": "integer",
+          "minimum": -45,
+          "maximum": 45,
+          "description": "Vertical deflection target in degrees."
+        },
+
+        "maneuver_state": {
+          "type": "string",
+          "enum": [
+            "CRUISE",
+            "EVASIVE_LEFT",
+            "EVASIVE_RIGHT",
+            "CLIMB",
+            "HOLD"
+          ],
+          "description": "Flight vector summary."
+        }
+      }
+    },
+
+    "raw_sensors": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "tof_distance_mm",
+        "pressure_hpa",
+        "temp_c",
+        "accel_g",
+        "gyro_dps"
+      ],
+      "properties": {
+        "tof_distance_mm": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Millimeters to nearest head-on target."
+        },
+
+        "pressure_hpa": {
+          "type": "number",
+          "description": "Barometric pressure from BMP280 in hPa."
+        },
+
+        "temp_c": {
+          "type": "number",
+          "description": "Ambient temperature in Celsius."
+        },
+
+        "accel_g": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "ax",
+            "ay",
+            "az"
+          ],
+          "properties": {
+            "ax": {
+              "type": "number",
+              "description": "Acceleration X component in g."
+            },
+            "ay": {
+              "type": "number",
+              "description": "Acceleration Y component in g."
+            },
+            "az": {
+              "type": "number",
+              "description": "Acceleration Z component in g."
+            }
+          }
+        },
+
+        "gyro_dps": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "gx",
+            "gy",
+            "gz"
+          ],
+          "properties": {
+            "gx": {
+              "type": "number",
+              "description": "Angular velocity X component in degrees per second."
+            },
+            "gy": {
+              "type": "number",
+              "description": "Angular velocity Y component in degrees per second."
+            },
+            "gz": {
+              "type": "number",
+              "description": "Angular velocity Z component in degrees per second."
+            }
+          }
+        }
+      }
+    },
+
+    "diagnostics": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "dominant_threat",
+        "cam_clear_sector",
+        "rf_jamming_detected",
+        "override_active"
+      ],
+      "properties": {
+        "dominant_threat": {
+          "type": "string",
+          "enum": [
+            "NONE",
+            "OBSTACLE_FRONT",
+            "SIDE_PROXIMITY",
+            "TURBULENCE",
+            "RF_JAMMER",
+            "LOW_VISIBILITY"
+          ],
+          "description": "Highest-weighted threat contributor."
+        },
+
+        "cam_clear_sector": {
+          "type": "string",
+          "enum": [
+            "LEFT",
+            "RIGHT",
+            "CENTER",
+            "NONE"
+          ],
+          "description": "Vision path recommendation from the Pi Zero."
+        },
+
+        "rf_jamming_detected": {
+          "type": "boolean",
+          "description": "True when signal degradation crosses the jamming attack threshold."
+        },
+
+        "override_active": {
+          "type": "boolean",
+          "description": "True when a critical threshold forces a bypass of standard weighting."
+        }
+      }
+    }
+  }
+}
