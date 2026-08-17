@@ -1,15 +1,15 @@
 :root {
-    --bg-main: #0b0f19;
-    --bg-card: #131b26;
-    --bg-card-hover: #1a2233;
-    --text-muted: #8b9bb4;
-    --text-bright: #e2e8f0;
-    --accent-green: #10b981;
-    --accent-red: #ef4444;
-    --accent-blue: #3b82f6;
-    --accent-warning: #f59e0b;
-    --border-color: #2a354d;
-    --terminal-bg: #05070a;
+    --bg-main: #0a1114; /* Deep dark cyan-charcoal */
+    --bg-card: rgba(0, 183, 205, 0.08); /* Glassy tint of cyan */
+    --bg-card-hover: rgba(0, 183, 205, 0.15);
+    --text-muted: #839ea8;
+    --text-bright: #FFF1D1; /* User provided cream */
+    --accent-green: #00E676; /* Added matching neon green */
+    --accent-red: #DF301C; /* User provided red */
+    --accent-blue: #00B7CD; /* User provided cyan */
+    --accent-warning: #FF9100; /* User provided orange */
+    --border-color: rgba(0, 183, 205, 0.3);
+    --terminal-bg: rgba(0, 0, 0, 0.6);
 }
 
 * {
@@ -21,15 +21,14 @@ body {
     background-color: var(--bg-main);
     color: var(--text-bright);
     line-height: 1.5;
-    padding: 24px;
-    max-width: 1400px;
+    padding: 32px;
     margin: 0 auto;
 }
 
 .top-row {
     display: flex;
-    gap: 24px;
-    margin-bottom: 24px;
+    gap: 32px;
+    margin: 0 100px 24px 100px;
     align-items: center;
 }
 
@@ -38,8 +37,10 @@ body {
     display: grid;
     grid-template-columns: 1fr auto 1fr;
     align-items: center;
-    padding: 12px 24px;
+    padding: 8px 16px;
     background-color: var(--bg-card);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
     border-radius: 8px;
     border: 1px solid var(--border-color);
 }
@@ -85,6 +86,8 @@ body {
 
 .card {
     background-color: var(--bg-card);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
     border: 1px solid var(--border-color);
     border-radius: 8px;
     padding: 20px;

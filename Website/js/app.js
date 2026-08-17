@@ -106,22 +106,15 @@ function deriveFrontendMetrics(data) {
  * Updates the 3D CSS transform of the UAV model icon in the header
  */
 function updateUAVVisualizer(data) {
-    const uavModel = document.getElementById('uav-model');
-    if (!uavModel || !data.actuation) return;
+    if (!data.actuation) return;
 
-    // servo_yaw_deg maps to rotateZ (spinning left/right like a compass)
-    // servo_pitch_deg maps to rotateX (nose up/down)
     const yaw = parseFloat(data.actuation.servo_yaw_deg) || 0;
     const pitch = parseFloat(data.actuation.servo_pitch_deg) || 0;
+    const isAlert = data.actuation.maneuver_state !== 'CRUISE';
     
-    // Apply 3D transforms. 
-    uavModel.style.transform = `rotateZ(${yaw}deg) rotateX(${-pitch}deg)`;
-
-    // Alert color overrides
-    if (data.actuation.maneuver_state !== 'CRUISE') {
-        uavModel.style.stroke = 'var(--accent-warning)';
-    } else {
-        uavModel.style.stroke = 'var(--accent-blue)';
+    // Delegate to native Three.js WebGL renderer
+    if (window.update3DModel) {
+        window.update3DModel(yaw, pitch, isAlert);
     }
 }
 
@@ -229,6 +222,42 @@ document.addEventListener('DOMContentLoaded', () => {
     appendLog('Telemetry link established on COM4', 'nominal');
     appendLog('Decision engine armed and monitoring', 'nominal');
 
+    // Debug Controls Logic
+    const manualOverride = document.getElementById('debug-manual-override');
+    const debugYaw = document.getElementById('debug-yaw');
+    const debugPitch = document.getElementById('debug-pitch');
+    const debugAlert = document.getElementById('debug-alert');
+    const debugYawVal = document.getElementById('debug-yaw-val');
+    const debugPitchVal = document.getElementById('debug-pitch-val');
+
+    function applyManualControls() {
+        if (manualOverride && manualOverride.checked && window.update3DModel) {
+            const yaw = parseInt(debugYaw.value);
+            const pitch = parseInt(debugPitch.value);
+            const isAlert = debugAlert.checked;
+            
+            debugYawVal.textContent = yaw;
+            debugPitchVal.textContent = pitch;
+            
+            window.update3DModel(yaw, pitch, isAlert);
+        }
+    }
+
+    if (debugYaw) {
+        debugYaw.addEventListener('input', applyManualControls);
+        debugPitch.addEventListener('input', applyManualControls);
+        debugAlert.addEventListener('change', applyManualControls);
+        
+        manualOverride.addEventListener('change', () => {
+            if (!manualOverride.checked) {
+                // Restore automatic simulation state when unchecked
+                updateDashboard(dashboardState);
+            } else {
+                applyManualControls();
+            }
+        });
+    }
+
     // Simulate incoming telemetry changes for demonstration
     setInterval(simulateTelemetry, 1500);
 });
@@ -237,7 +266,9 @@ document.addEventListener('DOMContentLoaded', () => {
  * Simulation of varying data and events over time.
  */
 function simulateTelemetry() {
-    // Basic system increment
+    if (document.getElementById('debug-manual-override')?.checked) return;
+
+    // Increment timestamp by 1.5s
     dashboardState.timestamp_ms = (parseInt(dashboardState.timestamp_ms) + 1500).toString();
 
     // Randomize raw sensors a bit
