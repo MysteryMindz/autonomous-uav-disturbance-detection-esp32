@@ -143,6 +143,22 @@ function updateDashboard(data, prefix = '') {
                     el.innerText = value;
                     applyDynamicColors(el, value, fullKey);
                 });
+
+                // Update associated progress bars for risk scores
+                if (fullKey.startsWith('risk_scores.')) {
+                    const barEl = document.getElementById(`bar_${key}`);
+                    if (barEl) {
+                        const numVal = parseFloat(value) || 0;
+                        barEl.style.width = `${Math.min(100, Math.max(0, numVal * 100))}%`;
+                        if (numVal > 0.75) {
+                            barEl.style.backgroundColor = 'var(--accent-red)';
+                        } else if (numVal > 0.4) {
+                            barEl.style.backgroundColor = 'var(--accent-warning)';
+                        } else {
+                            barEl.style.backgroundColor = 'var(--accent-green)';
+                        }
+                    }
+                }
             }
         }
     }
@@ -179,7 +195,7 @@ function updateSystemStatus() {
     const statusText = document.querySelector('.system-status');
 
     if (dashboardState.system_status !== 'ONLINE' || dashboardState.threat_level !== 'CLEAR') {
-        statusText.innerHTML = `<span class="status-indicator" style="background-color: var(--accent-red); box-shadow: 0 0 10px var(--accent-red);"></span> SYSTEM ${dashboardState.system_status} - ${dashboardState.threat_level}`;
+        statusText.innerHTML = `<span class="status-indicator" style="background-color: var(--accent-red); animation: pulse-red 2s infinite;"></span> SYSTEM ${dashboardState.system_status} - ${dashboardState.threat_level}`;
         statusText.style.color = 'var(--accent-red)';
     } else {
         statusText.innerHTML = `<span class="status-indicator"></span> SYSTEM ${dashboardState.system_status}`;
@@ -258,56 +274,89 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // Simulate incoming telemetry changes for demonstration
-    setInterval(simulateTelemetry, 1500);
+    // Hook up WebSocket for live data instead of mock simulation
+    initWebSocket();
 });
 
-/**
- * Simulation of varying data and events over time.
- */
-function simulateTelemetry() {
-    if (document.getElementById('debug-manual-override')?.checked) return;
+let ws;
+function initWebSocket() {
+    ws = new WebSocket('ws://localhost:8080');
 
-    // Increment timestamp by 1.5s
-    dashboardState.timestamp_ms = (parseInt(dashboardState.timestamp_ms) + 1500).toString();
+    ws.onopen = () => {
+        appendLog('WebSocket connected to GCS Backend', 'nominal');
+        dashboardState.system_status = 'ONLINE';
+        updateSystemStatus();
+    };
 
-    // Randomize raw sensors a bit
-    dashboardState.raw_sensors.pressure_hpa = (1012 + (Math.random() * 2 - 1)).toFixed(1);
-    dashboardState.raw_sensors.temp_c = (24 + Math.random()).toFixed(1);
-    dashboardState.raw_sensors.accel_g.ax = (Math.random() * 0.1 - 0.05).toFixed(2);
-    dashboardState.raw_sensors.gyro_dps.gz = (Math.random() * 2 - 1).toFixed(1);
+    ws.onmessage = (event) => {
+        try {
+            const data = JSON.parse(event.data);
+            
+            // Map the hardware C++ variables directly into our dashboard state
+            dashboardState.timestamp_ms = data.timestamp_ms || 0;
+            
+            let severityStr = "CLEAR";
+            if (data.severity_level === 1) severityStr = "CAUTION";
+            if (data.severity_level === 2) severityStr = "WARNING";
+            if (data.severity_level >= 3) severityStr = "CRITICAL";
+            dashboardState.threat_level = severityStr;
+            
+            // Raw Sensors
+            dashboardState.raw_sensors.tof_distance_mm = data.distance || 0;
+            dashboardState.raw_sensors.temp_c = data.temp || 0;
+            dashboardState.raw_sensors.pressure_hpa = data.pressure || 0;
+            
+            if (data.ax !== undefined) {
+                // Assuming IMU is raw int16, apply arbitrary scalar for display if not pre-scaled
+                dashboardState.raw_sensors.accel_g = { ax: (data.ax/16384.0).toFixed(2), ay: (data.ay/16384.0).toFixed(2), az: (data.az/16384.0).toFixed(2) };
+                dashboardState.raw_sensors.gyro_dps = { gx: (data.gx/131.0).toFixed(1), gy: (data.gy/131.0).toFixed(1), gz: (data.gz/131.0).toFixed(1) };
+            }
+            
+            // Risk Scores - simple mapping from IR states
+            dashboardState.risk_scores.d_ir_left = data.ir1_state === 1 ? "1.0" : "0.0";
+            dashboardState.risk_scores.d_ir_right = data.ir2_state === 1 ? "1.0" : "0.0";
+            dashboardState.risk_scores.d_tof = (data.distance > 0 && data.distance < 1000) ? (1.0 - (data.distance/1000.0)).toFixed(2) : "0.0";
+            
+            let totalRisk = (parseFloat(dashboardState.risk_scores.d_ir_left) + parseFloat(dashboardState.risk_scores.d_ir_right) + parseFloat(dashboardState.risk_scores.d_tof)) / 3.0;
+            dashboardState.risk_scores.r_total = totalRisk.toFixed(2);
+            
+            // Actuation
+            let maneuver = "CRUISE";
+            if (data.maneuver_code === 1) maneuver = "LEFT";
+            if (data.maneuver_code === 2) maneuver = "RIGHT";
+            if (data.maneuver_code === 3) maneuver = "ASCEND";
+            if (data.maneuver_code === 4) maneuver = "DESCEND";
+            dashboardState.actuation.maneuver_state = maneuver;
+            
+            if (data.severity_level >= 2 && dashboardState.system_status !== "EVASIVE") {
+                dashboardState.system_status = "EVASIVE";
+                appendLog('CRITICAL: Threat detected by sensors!', 'alert');
+                appendLog('Actuation triggered: ' + maneuver, 'warn');
+            } else if (data.severity_level === 0 && dashboardState.system_status !== "ONLINE") {
+                dashboardState.system_status = "ONLINE";
+                appendLog('Threat cleared. Resuming nominal flight path.', 'nominal');
+            }
 
-    const rand = Math.random();
+            // Update UI
+            if (!document.getElementById('debug-manual-override')?.checked) {
+                updateDashboard(dashboardState);
+            }
+            
+        } catch(e) {
+            console.error("Failed to parse websocket message", e);
+        }
+    };
 
-    // Trigger random simulated attack event
-    if (rand > 0.95 && dashboardState.system_status === "ONLINE") {
-        dashboardState.system_status = "EVASIVE";
-        dashboardState.threat_level = "CRITICAL";
-        dashboardState.risk_scores.r_total = "0.85";
-        dashboardState.risk_scores.s_loss = "0.9";
-        dashboardState.actuation.servo_yaw_deg = "-45";
-        dashboardState.actuation.servo_pitch_deg = "25";
-        dashboardState.actuation.maneuver_state = "EVASIVE_LEFT";
-        dashboardState.diagnostics.dominant_threat = "RF_JAMMER";
-        dashboardState.diagnostics.rf_jamming_detected = "true";
-
-        appendLog('CRITICAL: RF Jamming Attack Detected!', 'alert');
-        appendLog('Actuation triggered: EVASIVE_LEFT', 'warn');
-    }
-    // Clear attack event after a while
-    else if (rand < 0.15 && dashboardState.system_status !== "ONLINE") {
-        dashboardState.system_status = "ONLINE";
-        dashboardState.threat_level = "CLEAR";
-        dashboardState.risk_scores.r_total = "0.1";
-        dashboardState.risk_scores.s_loss = "0.0";
-        dashboardState.actuation.servo_yaw_deg = "0";
-        dashboardState.actuation.servo_pitch_deg = "0";
-        dashboardState.actuation.maneuver_state = "CRUISE";
-        dashboardState.diagnostics.dominant_threat = "NONE";
-        dashboardState.diagnostics.rf_jamming_detected = "false";
-
-        appendLog('Threat cleared. Resuming nominal flight path.', 'nominal');
-    }
-
-    updateDashboard(dashboardState);
+    ws.onclose = () => {
+        console.warn('[WS] Disconnected. Retrying in 2s...');
+        dashboardState.system_status = 'OFFLINE';
+        dashboardState.threat_level = 'UNKNOWN';
+        updateSystemStatus();
+        setTimeout(initWebSocket, 2000);
+    };
+    
+    ws.onerror = (err) => {
+        console.error('[WS] Error: ', err);
+        ws.close();
+    };
 }

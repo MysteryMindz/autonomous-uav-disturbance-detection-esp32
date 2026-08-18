@@ -17,6 +17,7 @@
             <div class="nav-links">
                 <a href="index.html" class="nav-btn active">Dashboard</a>
                 <a href="logs.html" class="nav-btn">Event Logs</a>
+                <a href="sensors.html" class="nav-btn">Sensor Stream</a>
             </div>
 
             <div class="header-right">
@@ -24,170 +25,200 @@
             </div>
         </header>
 
-        <!-- 3D UAV Visualizer outside the header -->
-        <div class="uav-visualizer-container">
-            <div class="uav-visualizer" style="perspective: 400px; display: flex; align-items: center; justify-content: center; width: 120px; height: 120px; border-radius: 50%; border: 1px solid var(--border-color);">
+    </div>
+
+    <div class="hud-layout">
+        <!-- LEFT WING -->
+        <div class="hud-panel left-panel">
+            <!-- Core Status -->
+            <div class="card decision-card">
+                <h2>Core Status</h2>
+                <div class="data-row">
+                    <span class="label">System Uptime</span>
+                    <span class="value"><span data-bind="timestamp_ms">0</span> ms</span>
+                </div>
+                <div class="data-row">
+                    <span class="label">System Status</span>
+                    <span class="badge badge-green" data-bind="system_status">ONLINE</span>
+                </div>
+                <div class="data-row">
+                    <span class="label">Threat Level</span>
+                    <span class="badge badge-blue" data-bind="threat_level">CLEAR</span>
+                </div>
+            </div>
+
+            <!-- Risk Scores -->
+            <div class="card">
+                <h2>Risk Scores (0.0 - 1.0)</h2>
+                <div class="data-row">
+                    <span class="label">Combined Total Risk</span>
+                    <div class="val-container">
+                        <div class="progress-container"><div class="progress-fill" id="bar_r_total" style="width: 0%;"></div></div>
+                        <span class="value" data-bind="risk_scores.r_total" style="width: 30px;">0.0</span>
+                    </div>
+                </div>
+                <div class="data-row">
+                    <span class="label">Front Laser Obstacle</span>
+                    <div class="val-container">
+                        <div class="progress-container"><div class="progress-fill" id="bar_d_tof" style="width: 0%;"></div></div>
+                        <span class="value" data-bind="risk_scores.d_tof" style="width: 30px;">0.0</span>
+                    </div>
+                </div>
+                <div class="data-row">
+                    <span class="label">Left Proximity Tripwire</span>
+                    <div class="val-container">
+                        <div class="progress-container"><div class="progress-fill" id="bar_d_ir_left" style="width: 0%;"></div></div>
+                        <span class="value" data-bind="risk_scores.d_ir_left" style="width: 30px;">0.0</span>
+                    </div>
+                </div>
+                <div class="data-row">
+                    <span class="label">Right Proximity Tripwire</span>
+                    <div class="val-container">
+                        <div class="progress-container"><div class="progress-fill" id="bar_d_ir_right" style="width: 0%;"></div></div>
+                        <span class="value" data-bind="risk_scores.d_ir_right" style="width: 30px;">0.0</span>
+                    </div>
+                </div>
+                <div class="data-row">
+                    <span class="label">Vibration & Turbulence</span>
+                    <div class="val-container">
+                        <div class="progress-container"><div class="progress-fill" id="bar_a_turb" style="width: 0%;"></div></div>
+                        <span class="value" data-bind="risk_scores.a_turb" style="width: 30px;">0.0</span>
+                    </div>
+                </div>
+                <div class="data-row">
+                    <span class="label">Vision Hazard Level</span>
+                    <div class="val-container">
+                        <div class="progress-container"><div class="progress-fill" id="bar_v_cam" style="width: 0%;"></div></div>
+                        <span class="value" data-bind="risk_scores.v_cam" style="width: 30px;">0.0</span>
+                    </div>
+                </div>
+                <div class="data-row">
+                    <span class="label">RF Jamming / Packet Loss</span>
+                    <div class="val-container">
+                        <div class="progress-container"><div class="progress-fill" id="bar_s_loss" style="width: 0%;"></div></div>
+                        <span class="value" data-bind="risk_scores.s_loss" style="width: 30px;">0.0</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Diagnostics -->
+            <div class="card">
+                <h2>Diagnostics & Root Cause</h2>
+                <div class="data-row">
+                    <span class="label">Primary Threat Source</span>
+                    <span class="value" data-bind="diagnostics.dominant_threat">NONE</span>
+                </div>
+                <div class="data-row">
+                    <span class="label">Clear Vision Sector</span>
+                    <span class="value" data-bind="diagnostics.cam_clear_sector">CENTER</span>
+                </div>
+                <div class="data-row">
+                    <span class="label">RF Jamming State</span>
+                    <span class="value" data-bind="diagnostics.rf_jamming_detected">false</span>
+                </div>
+                <div class="data-row">
+                    <span class="label">Critical Override</span>
+                    <span class="value" data-bind="diagnostics.override_active">false</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- CENTER HOLOGRAM -->
+        <div class="hud-center-panel">
+            <div class="massive-visualizer">
                 <div id="uav-3d-canvas" style="width: 100%; height: 100%; border-radius: 50%; overflow: hidden;"></div>
             </div>
-        </div>
-    </div>
-
-    <div class="alert-banner">
-        <div class="alert-box issue-box">
-            <div class="alert-label">DETECTED ISSUE</div>
-            <div class="alert-message" data-bind="rae_messages.issue">No active threats detected. System operating nominally.</div>
-        </div>
-        <div class="alert-box decision-box">
-            <div class="alert-label">RAE DECISION</div>
-            <div class="alert-message" data-bind="rae_messages.decision">MAINTAIN CRUISE VECTOR</div>
-        </div>
-    </div>
-
-    <div class="dashboard-grid">
-        <!-- Core Status -->
-        <div class="card decision-card">
-            <h2>Core Status</h2>
-            <div class="data-row">
-                <span class="label">System Uptime</span>
-                <span class="value"><span data-bind="timestamp_ms">0</span> ms</span>
-            </div>
-            <div class="data-row">
-                <span class="label">System Status</span>
-                <span class="value" data-bind="system_status">ONLINE</span>
-            </div>
-            <div class="data-row">
-                <span class="label">Threat Level</span>
-                <span class="value" data-bind="threat_level">CLEAR</span>
+            
+            <div class="alert-banner">
+                <div class="alert-box issue-box">
+                    <div class="alert-label">DETECTED ISSUE</div>
+                    <div class="alert-message" data-bind="rae_messages.issue">No active threats detected. System operating nominally.</div>
+                </div>
+                <div class="alert-box decision-box">
+                    <div class="alert-label">RAE DECISION</div>
+                    <div class="alert-message" data-bind="rae_messages.decision">MAINTAIN CRUISE VECTOR</div>
+                </div>
             </div>
         </div>
 
-        <!-- Risk Scores -->
-        <div class="card">
-            <h2>Risk Scores (0.0 - 1.0)</h2>
-            <div class="data-row">
-                <span class="label">Combined Total Risk</span>
-                <span class="value" data-bind="risk_scores.r_total">0.0</span>
+        <!-- RIGHT WING -->
+        <div class="hud-panel right-panel">
+            <!-- Raw Sensors -->
+            <div class="card">
+                <h2>Raw Sensor Telemetry</h2>
+                <div class="data-row">
+                    <span class="label">Distance to Target</span>
+                    <span class="value"><span data-bind="raw_sensors.tof_distance_mm">0</span> mm</span>
+                </div>
+                <div class="data-row">
+                    <span class="label">Barometric Pressure</span>
+                    <span class="value"><span data-bind="raw_sensors.pressure_hpa">0</span> hPa</span>
+                </div>
+                <div class="data-row">
+                    <span class="label">Altitude Change</span>
+                    <span class="value"><span data-bind="derived_metrics.altitude_change_ms">0.0</span> m/s</span>
+                </div>
+                <div class="data-row">
+                    <span class="label">Ambient Temperature</span>
+                    <span class="value"><span data-bind="raw_sensors.temp_c">0</span> °C</span>
+                </div>
+                <div class="data-row">
+                    <span class="label">Acceleration (x,y,z)</span>
+                    <span class="value">
+                        <span data-bind="raw_sensors.accel_g.ax">0.0</span>, 
+                        <span data-bind="raw_sensors.accel_g.ay">0.0</span>, 
+                        <span data-bind="raw_sensors.accel_g.az">0.0</span>
+                    </span>
+                </div>
+                <div class="data-row">
+                    <span class="label">Angular Velocity (x,y,z)</span>
+                    <span class="value">
+                        <span data-bind="raw_sensors.gyro_dps.gx">0.0</span>, 
+                        <span data-bind="raw_sensors.gyro_dps.gy">0.0</span>, 
+                        <span data-bind="raw_sensors.gyro_dps.gz">0.0</span>
+                    </span>
+                </div>
             </div>
-            <div class="data-row">
-                <span class="label">Front Laser Obstacle</span>
-                <span class="value" data-bind="risk_scores.d_tof">0.0</span>
-            </div>
-            <div class="data-row">
-                <span class="label">Left Proximity Tripwire</span>
-                <span class="value" data-bind="risk_scores.d_ir_left">0.0</span>
-            </div>
-            <div class="data-row">
-                <span class="label">Right Proximity Tripwire</span>
-                <span class="value" data-bind="risk_scores.d_ir_right">0.0</span>
-            </div>
-            <div class="data-row">
-                <span class="label">Vibration & Turbulence</span>
-                <span class="value" data-bind="risk_scores.a_turb">0.0</span>
-            </div>
-            <div class="data-row">
-                <span class="label">Vision Hazard Level</span>
-                <span class="value" data-bind="risk_scores.v_cam">0.0</span>
-            </div>
-            <div class="data-row">
-                <span class="label">RF Jamming / Packet Loss</span>
-                <span class="value" data-bind="risk_scores.s_loss">0.0</span>
-            </div>
-        </div>
 
-        <!-- Actuation -->
-        <div class="card">
-            <h2>Actuation & Directives</h2>
-            <div class="data-row">
-                <span class="label">Yaw Servo Angle</span>
-                <span class="value"><span data-bind="actuation.servo_yaw_deg">0</span>°</span>
+            <!-- Actuation -->
+            <div class="card">
+                <h2>Actuation & Directives</h2>
+                <div class="data-row">
+                    <span class="label">Yaw Servo Angle</span>
+                    <span class="value"><span data-bind="actuation.servo_yaw_deg">0</span>°</span>
+                </div>
+                <div class="data-row">
+                    <span class="label">Pitch Servo Angle</span>
+                    <span class="value"><span data-bind="actuation.servo_pitch_deg">0</span>°</span>
+                </div>
+                <div class="data-row">
+                    <span class="label">Flight Maneuver</span>
+                    <span class="value" data-bind="actuation.maneuver_state">CRUISE</span>
+                </div>
             </div>
-            <div class="data-row">
-                <span class="label">Pitch Servo Angle</span>
-                <span class="value"><span data-bind="actuation.servo_pitch_deg">0</span>°</span>
-            </div>
-            <div class="data-row">
-                <span class="label">Flight Maneuver</span>
-                <span class="value" data-bind="actuation.maneuver_state">CRUISE</span>
-            </div>
-        </div>
 
-        <!-- Raw Sensors -->
-        <div class="card">
-            <h2>Raw Sensor Telemetry</h2>
-            <div class="data-row">
-                <span class="label">Distance to Target</span>
-                <span class="value"><span data-bind="raw_sensors.tof_distance_mm">0</span> mm</span>
-            </div>
-            <div class="data-row">
-                <span class="label">Barometric Pressure</span>
-                <span class="value"><span data-bind="raw_sensors.pressure_hpa">0</span> hPa</span>
-            </div>
-            <div class="data-row">
-                <span class="label">Altitude Change</span>
-                <span class="value"><span data-bind="derived_metrics.altitude_change_ms">0.0</span> m/s</span>
-            </div>
-            <div class="data-row">
-                <span class="label">Ambient Temperature</span>
-                <span class="value"><span data-bind="raw_sensors.temp_c">0</span> °C</span>
-            </div>
-            <div class="data-row">
-                <span class="label">Acceleration (x,y,z)</span>
-                <span class="value">
-                    <span data-bind="raw_sensors.accel_g.ax">0.0</span>, 
-                    <span data-bind="raw_sensors.accel_g.ay">0.0</span>, 
-                    <span data-bind="raw_sensors.accel_g.az">0.0</span>
-                </span>
-            </div>
-            <div class="data-row">
-                <span class="label">Angular Velocity (x,y,z)</span>
-                <span class="value">
-                    <span data-bind="raw_sensors.gyro_dps.gx">0.0</span>, 
-                    <span data-bind="raw_sensors.gyro_dps.gy">0.0</span>, 
-                    <span data-bind="raw_sensors.gyro_dps.gz">0.0</span>
-                </span>
-            </div>
-        </div>
-
-        <!-- Diagnostics -->
-        <div class="card">
-            <h2>Diagnostics & Root Cause</h2>
-            <div class="data-row">
-                <span class="label">Primary Threat Source</span>
-                <span class="value" data-bind="diagnostics.dominant_threat">NONE</span>
-            </div>
-            <div class="data-row">
-                <span class="label">Clear Vision Sector</span>
-                <span class="value" data-bind="diagnostics.cam_clear_sector">CENTER</span>
-            </div>
-            <div class="data-row">
-                <span class="label">RF Jamming State</span>
-                <span class="value" data-bind="diagnostics.rf_jamming_detected">false</span>
-            </div>
-            <div class="data-row">
-                <span class="label">Critical Override</span>
-                <span class="value" data-bind="diagnostics.override_active">false</span>
-            </div>
-        </div>
-
-        <!-- Manual Test Controls -->
-        <div class="card" style="grid-column: 1 / -1; border-color: var(--accent-blue);">
-            <h2>Debug: Manual UAV Controls</h2>
-            <div style="display: flex; gap: 20px; align-items: center; margin-top: 15px; flex-wrap: wrap;">
-                <label style="display: flex; align-items: center; gap: 8px; color: var(--accent-warning); font-weight: bold;">
-                    <input type="checkbox" id="debug-manual-override"> Enable Manual Override
-                </label>
-
-                <div style="width: 1px; height: 30px; background: var(--border-color); margin: 0 10px;"></div>
-                
-                <label style="min-width: 150px;">Yaw (Left/Right): <span id="debug-yaw-val" style="color: var(--text-bright);">0</span>°</label>
-                <input type="range" id="debug-yaw" min="-90" max="90" value="0" style="flex: 1; min-width: 100px;">
-                
-                <label style="min-width: 150px;">Pitch (Up/Down): <span id="debug-pitch-val" style="color: var(--text-bright);">0</span>°</label>
-                <input type="range" id="debug-pitch" min="-45" max="45" value="0" style="flex: 1; min-width: 100px;">
-                
-                <label style="display: flex; align-items: center; gap: 8px;">
-                    <input type="checkbox" id="debug-alert"> Force Alert Color
-                </label>
+            <!-- Manual Test Controls -->
+            <div class="card" style="border-color: var(--accent-blue);">
+                <h2>Debug: Manual UAV Controls</h2>
+                <div style="display: flex; gap: 20px; flex-direction: column; margin-top: 15px;">
+                    <label style="display: flex; align-items: center; gap: 8px; color: var(--accent-warning); font-weight: bold;">
+                        <input type="checkbox" id="debug-manual-override"> Enable Manual Override
+                    </label>
+                    
+                    <div style="display: flex; align-items: center; justify-content: space-between;">
+                        <label>Yaw (L/R): <span id="debug-yaw-val" style="color: var(--text-bright);">0</span>°</label>
+                        <input type="range" id="debug-yaw" min="-90" max="90" value="0" style="width: 150px;">
+                    </div>
+                    
+                    <div style="display: flex; align-items: center; justify-content: space-between;">
+                        <label>Pitch (U/D): <span id="debug-pitch-val" style="color: var(--text-bright);">0</span>°</label>
+                        <input type="range" id="debug-pitch" min="-45" max="45" value="0" style="width: 150px;">
+                    </div>
+                    
+                    <label style="display: flex; align-items: center; gap: 8px;">
+                        <input type="checkbox" id="debug-alert"> Force Alert Color
+                    </label>
+                </div>
             </div>
         </div>
     </div>

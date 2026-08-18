@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>UAV Ground Station - Sensor Stream</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/styles.css">
+    <style>
+        .sensor-table-container {
+            max-height: 600px;
+            overflow-y: auto;
+        }
+        .sensor-table-container::-webkit-scrollbar { width: 8px; }
+        .sensor-table-container::-webkit-scrollbar-track { background: var(--terminal-bg); }
+        .sensor-table-container::-webkit-scrollbar-thumb { background: var(--border-color); border-radius: 4px; }
+        .sensor-table-container::-webkit-scrollbar-thumb:hover { background: #4a5b78; }
+        
+        #sensorTable th { font-size: 0.75rem; text-align: center; }
+        #sensorTable td { font-size: 0.8rem; text-align: center; font-family: "JetBrains Mono", monospace; }
+        .data-xyz { display: flex; justify-content: space-between; gap: 8px; width: 120px; margin: 0 auto; }
+        .data-x { color: var(--accent-red); }
+        .data-y { color: var(--accent-green); }
+        .data-z { color: var(--accent-blue); }
+    </style>
+</head>
+<body>
+    <div class="top-row">
+        <header class="dashboard-header">
+            <div class="header-left">
+                <h1>UAV DISTURBANCE DETECTION STATION</h1>
+            </div>
+            
+            <div class="nav-links">
+                <a href="index.html" class="nav-btn">Dashboard</a>
+                <a href="logs.html" class="nav-btn">Event Logs</a>
+                <a href="sensors.html" class="nav-btn active">Sensor Stream</a>
+            </div>
+
+            <div class="header-right">
+                <div class="system-status"><span class="status-indicator"></span> SYSTEM ONLINE</div>
+            </div>
+        </header>
+    </div>
+
+    <div class="card" style="clip-path: polygon(15px 0, 100% 0, 100% calc(100% - 15px), calc(100% - 15px) 100%, 0 100%, 0 15px);">
+        <h2>Raw Sensor Telemetry Stream (High Frequency)</h2>
+        
+        <div class="logs-controls">
+            <div class="filters">
+                <span class="filter-label">Stream Status:</span>
+                <span class="badge badge-green" id="streamStatus">ACTIVE (10 Hz)</span>
+            </div>
+            <button id="pauseStreamBtn" class="action-btn">Pause Stream</button>
+        </div>
+
+        <div class="table-container sensor-table-container">
+            <table id="sensorTable" style="width: 100%; border-collapse: collapse;">
+                <thead>
+                    <tr>
+                        <th style="text-align: left;">Timestamp</th>
+                        <th>ToF Dist (mm)</th>
+                        <th>Accel (X, Y, Z) (g)</th>
+                        <th>Gyro (X, Y, Z) (dps)</th>
+                        <th>Baro (hPa)</th>
+                        <th>Temp (°C)</th>
+                    </tr>
+                </thead>
+                <tbody id="sensorTableBody">
+                    <!-- Sensor rows dynamically prepended here -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <script src="js/sensors.js"></script>
+</body>
+</html>
