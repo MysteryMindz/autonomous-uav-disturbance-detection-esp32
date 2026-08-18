@@ -322,11 +322,17 @@ function initWebSocket() {
             
             // Actuation
             let maneuver = "CRUISE";
-            if (data.maneuver_code === 1) maneuver = "LEFT";
-            if (data.maneuver_code === 2) maneuver = "RIGHT";
-            if (data.maneuver_code === 3) maneuver = "ASCEND";
-            if (data.maneuver_code === 4) maneuver = "DESCEND";
+            let yaw = 0;
+            let pitch = 0;
+            
+            if (data.maneuver_code === 1) { maneuver = "LEFT"; yaw = -45; }
+            if (data.maneuver_code === 2) { maneuver = "RIGHT"; yaw = 45; }
+            if (data.maneuver_code === 3) { maneuver = "ASCEND"; pitch = 30; }
+            if (data.maneuver_code === 4) { maneuver = "DESCEND"; pitch = -30; }
+            
             dashboardState.actuation.maneuver_state = maneuver;
+            dashboardState.actuation.servo_yaw_deg = yaw.toString();
+            dashboardState.actuation.servo_pitch_deg = pitch.toString();
             
             if (data.severity_level >= 2 && dashboardState.system_status !== "EVASIVE") {
                 dashboardState.system_status = "EVASIVE";
